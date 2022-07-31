@@ -1,0 +1,73 @@
+<?php $_shouldextend[1]=1; ?>
+<?php $this->startSection('main-content'); ?>
+
+<div class="container-fluid px-5">
+<div class="container form-quiz">
+ <div class="safe-area">
+ <div class="quiz-result-area">
+ <h4 class="mx-2">Kết quả làm bài</h4>
+ <div class="info">
+ <div class="student-info">
+ <div class="avatar">
+ <img src="<?php echo \htmlentities(PUBLIC_URL, ENT_QUOTES, 'UTF-8', false); ?>img/avatar/<?php echo \htmlentities($_SESSION['user']['avatar'], ENT_QUOTES, 'UTF-8', false); ?>">
+ </div>
+ <div class="name">
+ <p><?php echo \htmlentities($_SESSION['user']['name'], ENT_QUOTES, 'UTF-8', false); ?></p>
+ </div>
+ </div>
+
+ <div class="quiz-result-info row">
+ </div>
+ <?php if ($showBtn) : ?>
+ <div class="d-flex justify-content-center reattempt-btn mt-3">
+ <a href="<?php echo \htmlentities(BASE_URL, ENT_QUOTES, 'UTF-8', false); ?>quizs/lam-bai/<?php echo \htmlentities($qzid, ENT_QUOTES, 'UTF-8', false); ?>"><button class="btn btn-danger">Làm lại Quiz</button></a>
+ </div>
+ <?php endif?>
+
+ </div>
+ </div>
+ </div>
+</div>
+</div>
+<?php $this->stopSection(); ?>
+
+<?php $this->startSection('main-script'); ?>
+<script>
+ prom = () => {
+ return new Promise((resolve) => {
+ resolve()
+ })
+ }
+
+ showResult = (result)=>{
+ str = `<table class="table table-light table-striped col-md-12 col-lg-6">
+ <tbody>
+ <tr><td><strong>Môn học: </strong>${result.subjectName}</td></tr>
+ <tr><td><strong>Quiz: </strong>${result.name}</td></tr>
+ <tr><td><strong>Số lượng câu hỏi: </strong>${result.countQuestions}</td></tr>
+ <tr><td><strong>Thời gian làm quiz: </strong>${result.duration_minutes} phút</td></tr>
+ <tr><td><strong>Deadline: </strong>${result.start_time} đến ${result.end_time}</td></tr>
+ </tbody>
+ </table>
+ <table class="table table-light table-striped col-md-12 col-lg-6">
+ <tbody>
+ <tr><td><strong>Trạng thái: </strong>${result.status}</td></tr>
+ <tr><td><strong>Điểm số: </strong>${result.score*10}/10</td></tr>
+ <tr><td><strong>Thời gian làm bài: </strong>${parseInt(result.count_time/60) +'phút '+ result.count_time%60 + 'giây'}</td></tr>
+ <tr><td><strong>Số lần làm lại: </strong>${result.reattemp}</td></tr>
+ <tr><td><strong>Đủ điều kiện: </strong>${result.isOk}</td></tr>
+ </tbody>
+ </table>`
+ $(".quiz-result-info").html(str)
+ }
+
+ prom().then(() => {
+ $.get("<?php echo \htmlentities(BASE_URL, ENT_QUOTES, 'UTF-8', false); ?>api/quizs/get-result/<?php echo \htmlentities($qzid, ENT_QUOTES, 'UTF-8', false); ?>", function(data) {
+ console.log(data);
+ showResult(data)
+ });
+ })
+</script>
+<?php $this->stopSection(); ?>
+
+<?php if (isset($_shouldextend[1])) { echo $this->runChild('layouts.main'); } ?>

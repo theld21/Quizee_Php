@@ -1,0 +1,104 @@
+<!-- MODAL -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Sửa Deadline</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="modalForm">
+                    <!-- Info -->
+                    <div class="info">
+                        <div class="form-row">
+                            <div class="form-group col-sm-12">
+                                <label for="name">Thời gian làm bài (phút)</label>
+                                <input type="nubmer" class="form-control" id="durationInput" name="duration" placeholder="Nhập thời gian" value="">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-sm-12">
+                                <label for="name">Kể từ ngày</label>
+                                <input type="date" class="form-control" id="startTimeInput" name="startTime" placeholder="Chọn thời gian bắt đầu" value="">
+                            </div>
+                            <div class="form-group col-sm-12">
+                                <label for="duration">Đến ngày</label>
+                                <input type="date" class="form-control" id="endTimeInput" name="endTime" placeholder="Chọn thời gian kết thúc" value="">
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="switchStatus" name="status"  onclick="changeSwitchStatus()">
+                            <span class="slider round"></span>
+                        </label>
+                        <span id="switchStatusLabel"></span>
+                    </div>
+                    <div class="text-center">
+                        <button type="button" id="submit-btn" class="text-right btn btn-primary">Đồng ý</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section('modal-script')
+<script>
+    function changeSwitchStatus() {
+        $("#switchStatusLabel").text(document.querySelector("#switchStatus").checked ? "Hiện quiz" : "Ẩn quiz")
+    }
+    
+    function editDeadlineQuiz(id, duration, startTime, endTime, status) {
+        $("#durationInput").val(duration)
+        $("#startTimeInput").val(startTime)
+        $("#endTimeInput").val(endTime)
+        if (status==1)
+            $("#switchStatus").prop('checked', true)
+        else
+            $("#switchStatus").prop('checked', false);
+        changeSwitchStatus()
+
+        $("#submit-btn").prop("onclick", null).off("click").click(()=>{
+            check = true
+            for (const e of $("input"))
+                if (e.value=='') check = false
+
+            if (!check) {
+                showAlert('Không được để trống', 'fail')
+            }
+            else{
+                var data = $('form').serialize();
+                $.post("{{BASE_URL}}api/quizs/edit/"+id, data, function (data,s) {
+                    console.log(data)
+                    reloadList()
+                    $('#exampleModal').modal('hide')
+                    if (data.status=='ok') {
+                        showAlert('Cập nhật thành công')
+                    }
+                    else showAlert('Lỗi xử lý', 'fail')
+                })
+            }
+        })
+    }
+    function removeQuiz(id, btn) {
+        console.log();
+        $("#exampleModalLabel").text("Xóa Quiz")
+        $("#modalForm label").attr("hidden", '');
+        $("#modalForm label").first().removeAttr("hidden", '').html("Bạn có muốn xóa: <strong>" + btn.parentNode.parentNode.children[0].innerText + "</trong> ?")
+        $("#modalForm input").attr("hidden", '');
+
+        let url = "{{BASE_URL}}api/quizs/delete/" + id
+        $("#submit-btn").prop("onclick", null).off("click").click(()=>{
+            $.get(url, (result)=>{
+                console.log(result)
+                $('#exampleModal').modal('hide')
+                if (result.status=='ok'){
+                    reloadList()
+                    showAlert('Đã xóa')
+                }
+                else showAlert('Lỗi xử lý', 'fail')
+            })
+        });
+    }
+</script>
+@endsection
